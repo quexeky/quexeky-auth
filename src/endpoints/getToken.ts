@@ -17,6 +17,6 @@ export class GetToken extends OpenAPIRoute {
 
         return await c.env.DB.prepare(
             "SELECT * FROM users WHERE user_id = ?1 AND application_id = ?2",
-        ).bind([data.query.user_id, data.query.application_id]).run();
+        ).bind(data.query.user_id, data.query.application_id).run();
     }
 }
