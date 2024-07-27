@@ -1,7 +1,7 @@
 import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 
-export class GetToken extends OpenAPIRoute {
+export class RequestUser extends OpenAPIRoute {
     schema = {
         request: {
             query: z.object({
@@ -15,8 +15,9 @@ export class GetToken extends OpenAPIRoute {
 
         console.log(data);
 
-        return await c.env.DB.prepare(
+        const result = await c.env.DB.prepare(
             "SELECT * FROM users WHERE user_id = ?1 AND application_id = ?2",
         ).bind(data.query.user_id, data.query.application_id).run();
+        return result.results.permissions;
     }
 }
