@@ -9,6 +9,8 @@
 		"cf-typegen": "wrangler types"
 	},
 	"dependencies": {
+		"@types/bcrypt": "^5.0.2",
+		"bcrypt": "^5.1.1",
 		"chanfana": "^2.0.2",
 		"hono": "^4.4.7",
 		"zod": "^3.23.8"
