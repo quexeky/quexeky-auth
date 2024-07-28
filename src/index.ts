@@ -1,10 +1,8 @@
 import { fromHono } from "chanfana";
 import { Hono } from "hono";
-import { TaskCreate } from "./endpoints/taskCreate";
-import { TaskDelete } from "./endpoints/taskDelete";
-import { TaskFetch } from "./endpoints/taskFetch";
-import { TaskList } from "./endpoints/taskList";
-import { GetToken } from "./endpoints/getToken";
+import { TokenFinder } from "./endpoints/tokenFinder";
+import {UserAuthenicator} from "./endpoints/userAuthenicator";
+import {UserOnboarding} from "./endpoints/userOnboarding";
 
 // Start a Hono app
 const app = new Hono();
@@ -14,8 +12,10 @@ const openapi = fromHono(app, {
 	docs_url: "/",
 });
 
-// Register OpenAPI endpoints
-openapi.get("/token", GetToken);
+// Checking user data
+openapi.get("/user", UserAuthenicator);
+openapi.get("/token", TokenFinder);
+openapi.post("/user", UserOnboarding)
 
 // Export the Hono app
 export default app;
