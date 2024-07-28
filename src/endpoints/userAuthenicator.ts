@@ -2,7 +2,7 @@ import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import {compareSync, hashSync} from "bcryptjs";
 
-export class UserManager extends OpenAPIRoute {
+export class UserAuthenicator extends OpenAPIRoute {
     schema = {
         request: {
             query: z.object({
@@ -15,6 +15,8 @@ export class UserManager extends OpenAPIRoute {
         const data = await this.getValidatedData<typeof this.schema>();
 
         const recvPassword = data.query.password;
+
+        console.log("RecvPassword:", recvPassword);
 
         const user = await c.env.DB.prepare(
             "SELECT * FROM users WHERE username = ?1",
@@ -31,7 +33,7 @@ export class UserManager extends OpenAPIRoute {
 
         console.log(result);
 
-        return result;
+        return new Response(undefined, {status: 200});
     }
 }
 

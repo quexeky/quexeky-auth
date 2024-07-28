@@ -1,7 +1,8 @@
 import { fromHono } from "chanfana";
 import { Hono } from "hono";
 import { TokenFinder } from "./endpoints/tokenFinder";
-import {UserManager} from "./endpoints/userManager";
+import {UserAuthenicator} from "./endpoints/userAuthenicator";
+import {UserOnboarding} from "./endpoints/userOnboarding";
 
 // Start a Hono app
 const app = new Hono();
@@ -12,8 +13,9 @@ const openapi = fromHono(app, {
 });
 
 // Checking user data
-openapi.get("/user", UserManager);
+openapi.get("/user", UserAuthenicator);
 openapi.get("/token", TokenFinder);
+openapi.post("/user", UserOnboarding)
 
 // Export the Hono app
 export default app;
