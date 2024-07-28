@@ -32,8 +32,11 @@ export class UserAuthenicator extends OpenAPIRoute {
         const result = compareSync(recvPassword, password)
 
         console.log(result);
+        if (result) {
+            return new Response(undefined, {status: 200});
+        }
+        return new Response(undefined, {status: 401});
 
-        return new Response(undefined, {status: 200});
     }
 }
 
