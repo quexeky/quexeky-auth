@@ -2,7 +2,7 @@ import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import {compareSync, hashSync} from "bcryptjs";
 
-export class UserAuthenicator extends OpenAPIRoute {
+export class UserAuthenticator extends OpenAPIRoute {
     schema = {
         request: {
             query: z.object({
