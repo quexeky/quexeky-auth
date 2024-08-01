@@ -15,7 +15,6 @@ export class TokenCreator extends OpenAPIRoute {
     async handle(c) {
         const data = await this.getValidatedData<typeof this.schema>();
 
-        fetch()
 
         const recvPassword = data.query.password;
 
