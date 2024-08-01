@@ -16,7 +16,7 @@ export class TokenFinder extends OpenAPIRoute {
         console.log(data);
 
         const result = await c.env.DB.prepare(
-            "SELECT * FROM users WHERE user_id = ?1 AND application_id = ?2",
+            "SELECT * FROM tokens WHERE token_id = ? AND application_id = ?",
         ).bind(data.query.token, data.query.application_id).run();
         return result.results;
     }

@@ -1,6 +1,7 @@
 import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import {compareSync, hashSync} from "bcryptjs";
+import {worker_fetch} from "../util";
 
 export class TokenCreator extends OpenAPIRoute {
     schema = {
@@ -15,6 +16,9 @@ export class TokenCreator extends OpenAPIRoute {
     async handle(c) {
         const data = await this.getValidatedData<typeof this.schema>();
 
+        const user_login = worker_fetch("/userLogin", JSON.stringify(
+            { username: data.query.username, password: data.query.password }
+        ), c.env.USER_AUTH);
 
         const recvPassword = data.query.password;
 
@@ -24,7 +28,7 @@ export class TokenCreator extends OpenAPIRoute {
         console.log("User:", data.query.username);
 
         const result = await c.env.DB.prepare(
-            "INSERT INTO users(username, password) VALUES(?1, ?2)"
+            "INSERT INTO tokens(username, password) VALUES(?1, ?2)"
         ).bind(data.query.username, password).run();
 
         console.log(result);
