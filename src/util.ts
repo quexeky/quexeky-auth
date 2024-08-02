@@ -6,7 +6,9 @@ export async function worker_fetch(path: string, body: string, binding: Fetcher)
         }
     });
 
-    console.log(fetched_data.body.values());
+    //console.log("Fetched data Values:", fetched_data.body.values());
+    const text = new TextDecoder().decode((await fetched_data.body.getReader().read()).value);
+    console.log(text);
 
-    return JSON.parse(new TextDecoder().decode((await fetched_data.body.getReader().read()).value));
+    return JSON.parse(text);
 }
