@@ -15,24 +15,32 @@ export class TokenCreator extends OpenAPIRoute {
     async handle(c) {
         const data = await this.getValidatedData<typeof this.schema>();
 
-        const user_login = await worker_fetch("userLogin", JSON.stringify(
+        const user_login = await worker_fetch("api/userLogin", JSON.stringify(
             { username: data.query.username, password: data.query.password }
         ), c.env.USER_AUTH);
         console.log("User Login: ", user_login);
+        if (user_login.status != 200) {
+            return new Response(undefined, {status: user_login.status});
+        }
 
         const application_id = data.query.application_id;
+
+        const token = new Uint8Array(64);
+        crypto.getRandomValues(token);
 
         console.log(application_id);
 
         console.log("User:", data.query.username);
 
         const result = await c.env.DB.prepare(
-            "INSERT INTO tokens(username, application_id) VALUES(?, ?)"
-        ).bind(data.query.username, application_id).run();
+            "INSERT INTO tokens(username, application_id, token) VALUES(?, ?, ?)"
+        ).bind(data.query.username, application_id, token.toString()).run();
 
-        console.log(result);
+        console.log(token.toString());
 
-        return result;
+        return new Response(JSON.stringify({
+            token: token.toString()
+        }), {status: 200});
     }
 }
 

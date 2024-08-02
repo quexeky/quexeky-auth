@@ -7,8 +7,12 @@ export async function worker_fetch(path: string, body: string, binding: Fetcher)
     });
 
     //console.log("Fetched data Values:", fetched_data.body.values());
-    const text = new TextDecoder().decode((await fetched_data.body.getReader().read()).value);
-    console.log(text);
+    const text = await fetched_data.text();
+    console.log("Text:", text);
 
-    return JSON.parse(text);
+    if (fetched_data.bodyUsed) {
+        //return JSON.parse(text);
+    }
+
+    return {text: text, status: fetched_data.status};
 }
