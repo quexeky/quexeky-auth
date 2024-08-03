@@ -28,18 +28,19 @@ export class TokenCreator extends OpenAPIRoute {
         const token = new Uint8Array(64);
         crypto.getRandomValues(token);
 
+        const encoded_token = btoa(String.fromCharCode(...token));
+
         console.log(application_id);
 
         console.log("User:", data.query.username);
 
         const result = await c.env.DB.prepare(
             "INSERT INTO tokens(username, application_id, token) VALUES(?, ?, ?)"
-        ).bind(data.query.username, application_id, token.toString()).run();
+        ).bind(data.query.username, application_id, encoded_token).run();
 
-        console.log(token.toString());
 
         return new Response(JSON.stringify({
-            token: token.toString()
+            token: encoded_token
         }), {status: 200});
     }
 }
