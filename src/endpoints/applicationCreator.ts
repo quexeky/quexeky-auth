@@ -6,20 +6,23 @@ export class UserOnboarding extends OpenAPIRoute {
     schema = {
         request: {
             query: z.object({
-                username: z.string().max(32),
-                password: z.string().base64().length(8), // 512 bit password hash
+                key: z.string().base64().length(8), // 512 bit password hash
             })
         }
     }
     async handle(c) {
         const data = await this.getValidatedData<typeof this.schema>();
 
-        const recvPassword = data.query.password;
+        const recvKey = data.query.key;
 
-        const password = hashSync(recvPassword);
+
+        const password = hashSync(recvKey);
         console.log("Password:", password);
 
-        console.log("User:", data.query.username);
+        const application_id = new Uint8Array(64);
+        crypto.getRandomValues(application_id);
+        
+
 
         const result = await c.env.DB.prepare(
             "INSERT INTO users(username, password) VALUES(?1, ?2)"

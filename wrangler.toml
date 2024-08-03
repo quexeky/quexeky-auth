@@ -4,7 +4,14 @@ main = "src/index.ts"
 compatibility_date = "2024-07-25"
 node_compat = true
 
+services = [
+    { binding = "USER_AUTH", service = "cloudflare-user-db" }
+]
+
 [[d1_databases]]
 binding = "DB"
 database_name = "quexeky-auth"
 database_id = "83baa968-7fe4-4b9b-bd91-c6090c9455e3"
+
+[vars]
+AUTH_KEY = "AUTH KEY"

@@ -1,11 +1,15 @@
 import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 
+// Client "Authorisation Grant" via the token which the server is notified.
+// The authorisation token should only work once before being deleted.
+// If different data is required, then the token must be regenerated
+
 export class TokenFinder extends OpenAPIRoute {
     schema = {
         request: {
             query: z.object({
-                token: z.string().base64().length(16),
+                token: z.string().base64().length(88),
                 application_id: z.string().base64().length(16),
             })
         }
@@ -16,8 +20,11 @@ export class TokenFinder extends OpenAPIRoute {
         console.log(data);
 
         const result = await c.env.DB.prepare(
-            "SELECT * FROM users WHERE user_id = ?1 AND application_id = ?2",
+            "SELECT * FROM tokens WHERE token = ? AND application_id = ?",
         ).bind(data.query.token, data.query.application_id).run();
+        await c.env.DB.prepare(
+            "DELETE FROM tokens WHERE token = ? AND application_id = ?",
+        ).bind(data.query.token)
         return result.results;
     }
 }
