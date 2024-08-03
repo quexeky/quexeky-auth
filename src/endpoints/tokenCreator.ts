@@ -2,6 +2,9 @@ import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import {worker_fetch} from "../util";
 
+// OAuth2 Alternative "Authorisation Request indirectly via the authorisation
+// server as an intermediary"
+
 export class TokenCreator extends OpenAPIRoute {
     schema = {
         request: {
@@ -41,7 +44,7 @@ export class TokenCreator extends OpenAPIRoute {
 
         return new Response(JSON.stringify({
             token: encoded_token
-        }), {status: 200});
+        }), { status: 200 });
     }
 }
 
