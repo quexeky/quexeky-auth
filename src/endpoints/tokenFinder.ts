@@ -8,10 +8,16 @@ import { z } from "zod";
 export class TokenFinder extends OpenAPIRoute {
     schema = {
         request: {
-            query: z.object({
-                token: z.string(),
-                application_id: z.string().base64().length(16),
-            })
+            body: {
+                content: {
+                    'application/json': {
+                        schema: z.object({
+                            token: z.string(),
+                            application_id: z.string().base64().length(16),
+                        })
+                    }
+                },
+            }
         }
     }
     async handle(c) {
@@ -21,10 +27,10 @@ export class TokenFinder extends OpenAPIRoute {
 
         const result = await c.env.DB.prepare(
             "SELECT * FROM tokens WHERE token = ? AND application_id = ?",
-        ).bind(data.query.token, data.query.application_id).run();
+        ).bind(data.body.token, data.body.application_id).run();
         await c.env.DB.prepare(
             "DELETE FROM tokens WHERE token = ? AND application_id = ?",
-        ).bind(data.query.token)
+        ).bind(data.body.token)
         return result.results;
     }
 }
