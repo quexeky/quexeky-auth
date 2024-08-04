@@ -9,10 +9,13 @@
 		"cf-typegen": "wrangler types"
 	},
 	"dependencies": {
+		"@tsndr/cloudflare-worker-jwt": "^2.5.3",
 		"@types/bcryptjs": "^2.4.6",
+		"@types/jsonwebtoken": "^9.0.6",
 		"bcryptjs": "^2.4.3",
 		"chanfana": "^2.0.2",
 		"hono": "^4.4.7",
+		"jsonwebtoken": "^9.0.2",
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
