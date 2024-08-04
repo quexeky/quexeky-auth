@@ -6,6 +6,18 @@ import {importJWK, SignJWT} from 'jose';
 // OAuth2 Alternative "Authorisation Request indirectly via the authorisation
 // server as an intermediary"
 
+async function generate_signed_token(c, data: Record<string, unknown>) {
+    const key = await importJWK(JSON.parse(c.env.SERVER_JWK)); // Import key from
+
+    return await new SignJWT(
+        data
+    )
+        .setProtectedHeader({alg: "ES256"})
+        .setIssuedAt()
+        .setExpirationTime(c.env.TOKEN_EXPIRY_TIME)
+        .sign(key);
+}
+
 export class TokenCreator extends OpenAPIRoute {
     schema = {
         request: {
@@ -16,7 +28,7 @@ export class TokenCreator extends OpenAPIRoute {
                             username: z.string().max(32),
                             password: z.string().base64().length(8), // 512 bit password hash
                             application_id: z.string().base64().length(16),
-                            permissions: z.array(z.string())
+                            permissions: z.array(z.string().max(24)).max(64) // Limit the size of the request
                         })
                     }
                 }
@@ -25,62 +37,26 @@ export class TokenCreator extends OpenAPIRoute {
     }
     async handle(c) {
         const data = await this.getValidatedData<typeof this.schema>();
+        console.log("Data parsed");
 
         const { username, password, application_id, permissions } = data.body;
 
         const user_login = await worker_fetch("api/userLogin", JSON.stringify(
-            { username: username, password: username }
+            { username: username, password: password }
         ), c.env.USER_AUTH);
-        console.log("User Login: ", user_login);
+
         if (user_login.status != 200) {
             return new Response(undefined, {status: user_login.status});
         }
-
-        const encoded_key = JSON.parse(c.env.SERVER_JWK);
-        console.log(encoded_key)
-
-        /*const token = new Uint8Array(64);
-        crypto.getRandomValues(token);
-
-        const encoded_token = btoa(String.fromCharCode(...token));
-         */
-        console.log("Generating Key");
-        const key = await importJWK(encoded_key);
-        console.log("Key:",key);
-
-
-        const token = await new SignJWT(
-            {
-                username: username,
-                application_id: application_id,
-                permissions: permissions,
-            }
-        )
-            .setProtectedHeader({ alg: "ES256" })
-            .setIssuedAt()
-            .setExpirationTime(c.env.TOKEN_EXPIRY_TIME)
-            .sign(key);
-        console.log(token);
-
-        /*const token = await jwt.sign(
-            {
-                username: data.query.username,
-                application_id: application_id,
-                permissions: data.query.permissions,
-            },
-            c.env.JWT_SIGNATURE,
-            { algorithm: "ES256" }
-        )
-         */
-
-        console.log(application_id);
-
-        console.log("User:", username);
+        const token = await generate_signed_token(c, { username, application_id, permissions });
 
         const result = await c.env.DB.prepare(
             "INSERT INTO tokens(username, application_id, token) VALUES(?, ?, ?)"
         ).bind(username, application_id, token).run();
 
+        if (!result.success) {
+            return new Response(undefined, { status: 500 });
+        }
 
         return new Response(JSON.stringify({
             token: token

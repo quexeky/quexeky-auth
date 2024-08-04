@@ -1,5 +1,5 @@
-import { OpenAPIRoute } from "chanfana";
-import { z } from "zod";
+import {OpenAPIRoute} from "chanfana";
+import {z} from "zod";
 
 // Client "Authorisation Grant" via the token which the server is notified.
 // The authorisation token should only work once before being deleted.
@@ -20,10 +20,9 @@ export class TokenFinder extends OpenAPIRoute {
             }
         }
     }
+
     async handle(c) {
         const data = await this.getValidatedData<typeof this.schema>()
-
-        console.log(data);
 
         const result = await c.env.DB.prepare(
             "SELECT * FROM tokens WHERE token = ? AND application_id = ?",
