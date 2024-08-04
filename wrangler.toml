@@ -2,7 +2,7 @@
 name = "quexeky-auth"
 main = "src/index.ts"
 compatibility_date = "2024-07-25"
-node_compat = true
+compatibility_flags = ["nodejs_compat"]
 
 services = [
     { binding = "USER_AUTH", service = "cloudflare-user-db" }
@@ -16,3 +16,4 @@ database_id = "83baa968-7fe4-4b9b-bd91-c6090c9455e3"
 [vars]
 AUTH_KEY = "AUTH KEY"
 JWT_SIGNATURE = "JWT SIGNATURE"
+TOKEN_EXPIRY_TIME = "1h"

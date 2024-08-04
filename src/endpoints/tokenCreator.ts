@@ -1,7 +1,8 @@
 import { OpenAPIRoute } from "chanfana";
 import { z } from "zod";
 import {worker_fetch} from "../util";
-import jwt from "@tsndr/cloudflare-worker-jwt";
+import {SignJWT, importPKCS8, importJWK} from 'jose';
+import crypto from "node:crypto";
 
 // OAuth2 Alternative "Authorisation Request indirectly via the authorisation
 // server as an intermediary"
@@ -30,14 +31,41 @@ export class TokenCreator extends OpenAPIRoute {
             return new Response(undefined, {status: user_login.status});
         }
 
+        const encoded_key = {
+            "kty": "EC",
+            "d": "lwx5suk56v1tJkKYte3pn5KlgMVTCm7q9IxUeMcW4Ao",
+            "use": "sig",
+            "crv": "P-256",
+            "kid": "HphaOArqOFKYvdG-Mc0gcJGIcaeteIjQrgx_kGe3dcI",
+            "x": "gmYGs736fRK4_X8mzlG31VgM1i6YSdgRUAYzttCOQi4",
+            "y": "ScKJp6ywTpiy7kfop0F6_U3kNg8Lkn4VAo57d_lg8m0",
+            "alg": "ES256"
+        };
 
         /*const token = new Uint8Array(64);
         crypto.getRandomValues(token);
 
         const encoded_token = btoa(String.fromCharCode(...token));
          */
+        console.log("Generating Key");
+        const key = await importJWK(encoded_key);
+        console.log("Key:",key);
 
-        const token = await jwt.sign(
+
+        const token = await new SignJWT(
+            {
+                username: data.query.username,
+                application_id: application_id,
+                permissions: data.query.permissions,
+            }
+        )
+            .setProtectedHeader({ alg: "ES256" })
+            .setIssuedAt()
+            .setExpirationTime(c.env.TOKEN_EXPIRY_TIME)
+            .sign(key);
+        console.log(token);
+
+        /*const token = await jwt.sign(
             {
                 username: data.query.username,
                 application_id: application_id,
@@ -46,6 +74,7 @@ export class TokenCreator extends OpenAPIRoute {
             c.env.JWT_SIGNATURE,
             { algorithm: "ES256" }
         )
+         */
 
         console.log(application_id);
 
@@ -57,7 +86,7 @@ export class TokenCreator extends OpenAPIRoute {
 
 
         return new Response(JSON.stringify({
-            token: encoded_token
+            token: token
         }), { status: 200 });
     }
 }
