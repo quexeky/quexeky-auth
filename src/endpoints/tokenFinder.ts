@@ -9,7 +9,7 @@ export class TokenFinder extends OpenAPIRoute {
     schema = {
         request: {
             query: z.object({
-                token: z.string().base64().length(88),
+                token: z.string(),
                 application_id: z.string().base64().length(16),
             })
         }

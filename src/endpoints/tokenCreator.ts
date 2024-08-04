@@ -31,16 +31,8 @@ export class TokenCreator extends OpenAPIRoute {
             return new Response(undefined, {status: user_login.status});
         }
 
-        const encoded_key = {
-            "kty": "EC",
-            "d": "lwx5suk56v1tJkKYte3pn5KlgMVTCm7q9IxUeMcW4Ao",
-            "use": "sig",
-            "crv": "P-256",
-            "kid": "HphaOArqOFKYvdG-Mc0gcJGIcaeteIjQrgx_kGe3dcI",
-            "x": "gmYGs736fRK4_X8mzlG31VgM1i6YSdgRUAYzttCOQi4",
-            "y": "ScKJp6ywTpiy7kfop0F6_U3kNg8Lkn4VAo57d_lg8m0",
-            "alg": "ES256"
-        };
+        const encoded_key = JSON.parse(c.env.SERVER_JWK);
+        console.log(encoded_key)
 
         /*const token = new Uint8Array(64);
         crypto.getRandomValues(token);
