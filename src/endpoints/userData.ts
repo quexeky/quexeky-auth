@@ -1,6 +1,7 @@
 import {OpenAPIRoute} from "chanfana";
 import {z} from "zod";
 import {importJWK, jwtVerify} from 'jose';
+import {worker_fetch} from "../util";
 
 
 export class UserData extends OpenAPIRoute {
@@ -9,6 +10,7 @@ export class UserData extends OpenAPIRoute {
             query: z.object({
                 username: z.string().max(32),
                 token: z.string().regex(/^(?:[\w-]*\.){2}[\w-]*$/),
+                data: z.string()
             })
         }
     }
@@ -22,7 +24,6 @@ export class UserData extends OpenAPIRoute {
         const validated_token = await jwtVerify(token, key);
         if (validated_token)
         console.log(validated_token);
-
 
         const result = await c.env.DB.prepare(
             "SELECT * FROM tokens WHERE token = ? AND username = ?",
@@ -38,6 +39,10 @@ export class UserData extends OpenAPIRoute {
             ).bind(token, username).run();
             return new Response(undefined, { status: 401 })
         }
+        const user_data = worker_fetch("example.com/userData", JSON.stringify())
+        const requested_data = result.results[0].permissions[data.query.data];
+
+        if (requested_data !== undefined)
 
         return new Response(JSON.stringify({
             result
