@@ -22,7 +22,6 @@ export class UserData extends OpenAPIRoute {
         const key = await importJWK({crv, kty, x, y, alg}); // Import key from
 
         const validated_token = await jwtVerify(token, key);
-        if (validated_token)
         console.log(validated_token);
 
         const result = await c.env.DB.prepare(
@@ -32,25 +31,28 @@ export class UserData extends OpenAPIRoute {
         if (!result.success) {
             return new Response(undefined, { status: 500 });
         }
+        console.log("Result:", result.results);
+        const exp = validated_token.payload.exp;
+        if (typeof exp != "number") { return new Response(undefined, { status: 400 }); }
 
-        if (result.results[0].expiry < Date.now()) {
+        if (exp < Date.now()) {
             await c.env.DB.prepare(
                 "DELETE FROM tokens WHERE token = ? AND username = ?",
             ).bind(token, username).run();
             return new Response(undefined, { status: 401 })
         }
-        const user_data = worker_fetch("example.com/userData", JSON.stringify(
+        console.log("User Result:", result.results[0]);
+        const user_data = await worker_fetch("http://localhost:36685/api/getUserData", JSON.stringify(
             {
-                key: "aaaaaaaa", user_id: result.results[0].user_id, username: username, column: data
-            })
-            , c.env.USER_DATA);
-        try {
-            console.log(result.results[0])
-            const requested_data = result.results[0].permissions[data.query.data];
-            return new Response(JSON.stringify({
-                requested_data
-            }), { status: 200 });
+                key: "aaaaaaaa", user_id: "e3ba2d6a-f7ca-437c-b507-81fc9ad5a459", username: username, column: data
+            }),
+            c.env.USER_DATA
+        );
 
+        try {
+            //const requested_data = result.results[0].permissions[data.query.data];
+            console.log("Requested Data:", user_data);
+            return new Response(user_data.text, { status: 200 });
         }
         catch {
             return new Response(undefined, { status: 404 })

@@ -50,11 +50,13 @@ export class TokenCreator extends OpenAPIRoute {
             console.log(user_login);
             return new Response(undefined, {status: user_login.status});
         }
-        const token = await generate_signed_token(c, { username, application_id, permissions });
+        const token = await generate_signed_token(c, { username, application_id, permissions })
+        const expiry = Date.now() + 60 * 60 * 24 * 30 //30 days before expiry
+        console.log("Expiry:", expiry);
 
         const result = await c.env.DB.prepare(
             "INSERT INTO tokens(username, application_id, token, expiry) VALUES(?, ?, ?, ?)"
-        ).bind(username, application_id, token, Date.now() + 60 * 60 * 24 * 30 /* 30 days before expiry */).run();
+        ).bind(username, application_id, token, expiry).run();
 
         if (!result.success) {
             console.log(result);
