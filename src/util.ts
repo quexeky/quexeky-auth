@@ -9,6 +9,8 @@ export async function worker_fetch(path: string, body: string, binding: Fetcher)
     //console.log("Fetched data Values:", fetched_data.body.values());
     const text = await fetched_data.text();
 
+    console.log(fetched_data);
+
     if (fetched_data.bodyUsed) {
         //return JSON.parse(text);
     }

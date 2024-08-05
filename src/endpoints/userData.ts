@@ -39,14 +39,23 @@ export class UserData extends OpenAPIRoute {
             ).bind(token, username).run();
             return new Response(undefined, { status: 401 })
         }
-        const user_data = worker_fetch("example.com/userData", JSON.stringify())
-        const requested_data = result.results[0].permissions[data.query.data];
+        const user_data = worker_fetch("example.com/userData", JSON.stringify(
+            {
+                key: "aaaaaaaa", user_id: result.results[0].user_id, username: username, column: data
+            })
+            , c.env.USER_DATA);
+        try {
+            console.log(result.results[0])
+            const requested_data = result.results[0].permissions[data.query.data];
+            return new Response(JSON.stringify({
+                requested_data
+            }), { status: 200 });
 
-        if (requested_data !== undefined)
+        }
+        catch {
+            return new Response(undefined, { status: 404 })
+        }
 
-        return new Response(JSON.stringify({
-            result
-        }), { status: 200 });
     }
 }
 

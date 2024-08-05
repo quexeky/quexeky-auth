@@ -44,8 +44,10 @@ export class TokenCreator extends OpenAPIRoute {
         const user_login = await worker_fetch("api/userLogin", JSON.stringify(
             { username: username, password: password }
         ), c.env.USER_AUTH);
+        console.log("User Login:", user_login);
 
         if (user_login.status != 200) {
+            console.log(user_login);
             return new Response(undefined, {status: user_login.status});
         }
         const token = await generate_signed_token(c, { username, application_id, permissions });
@@ -55,6 +57,7 @@ export class TokenCreator extends OpenAPIRoute {
         ).bind(username, application_id, token, Date.now() + 60 * 60 * 24 * 30 /* 30 days before expiry */).run();
 
         if (!result.success) {
+            console.log(result);
             return new Response(undefined, { status: 500 });
         }
 
