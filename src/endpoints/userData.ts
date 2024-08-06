@@ -28,23 +28,34 @@ export class UserData extends OpenAPIRoute {
             "SELECT * FROM tokens WHERE token = ? AND username = ?",
         ).bind(token, username).run();
 
-        if (!result.success) {
+        if (!result.success || result.results.length === 0) {
             return new Response(undefined, { status: 500 });
         }
+
         console.log("Result:", result.results);
         const exp = validated_token.payload.exp;
         if (typeof exp != "number") { return new Response(undefined, { status: 400 }); }
 
-        if (exp < Date.now()) {
+        console.log("Expires:", exp, "Date Now:", Date.now() / 1000);
+        if (exp < (Date.now() / 1000)) {
+            console.log("Expired");
             await c.env.DB.prepare(
                 "DELETE FROM tokens WHERE token = ? AND username = ?",
             ).bind(token, username).run();
             return new Response(undefined, { status: 401 })
         }
-        console.log("User Result:", result.results[0]);
-        const user_data = await worker_fetch("http://localhost:36685/api/getUserData", JSON.stringify(
+        console.log("User ID Auth Key:", c.env.APPLICATION_AUTH_KEY);
+        const user_id = await worker_fetch("api/getUserID", JSON.stringify(
             {
-                key: "aaaaaaaa", user_id: "e3ba2d6a-f7ca-437c-b507-81fc9ad5a459", username: username, column: data
+                username: username,
+                auth_key: "ECvYMx2iM0y95ipjx9jVGhZEbPVJfVxNt7hXMbXZEP0a+uM7ZBALMtMuH7dqC5Go"
+            }),
+            c.env.USER_AUTH
+        );
+        console.log("User ID:", user_id);
+        const user_data = await worker_fetch("api/getUserData", JSON.stringify(
+            {
+                key: "aaaaaaaa", user_id: user_id.text, column: data.query.data
             }),
             c.env.USER_DATA
         );
