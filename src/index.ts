@@ -14,7 +14,7 @@ const openapi = fromHono(app, {
 });
 
 // Checking user data
-openapi.get("/token", TokenFinder);
+// openapi.get("/token", TokenFinder);
 openapi.post("/token", TokenCreator);
 openapi.post("/createApplication", ApplicationCreator);
 openapi.get("/userData", UserData);

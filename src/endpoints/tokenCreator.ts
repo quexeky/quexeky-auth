@@ -14,7 +14,7 @@ async function generate_signed_token(c, data: Record<string, unknown>) {
     )
         .setProtectedHeader({alg: "ES256"})
         .setIssuedAt()
-        .setExpirationTime(c.env.TOKEN_EXPIRY_TIME)
+        .setExpirationTime(Date.now() + c.env.TOKEN_EXPIRY_TIME)
         .sign(key);
 }
 
@@ -51,7 +51,7 @@ export class TokenCreator extends OpenAPIRoute {
             return new Response(undefined, {status: user_login.status});
         }
         const token = await generate_signed_token(c, { username, application_id, permissions })
-        const expiry = Date.now() + 60 * 60 * 24 * 30 //30 days before expiry
+        const expiry = Date.now() + c.env.TOKEN_EXPIRY_TIME * 1000
         console.log("Expiry:", expiry);
 
         const result = await c.env.DB.prepare(

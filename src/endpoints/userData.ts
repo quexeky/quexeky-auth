@@ -1,6 +1,6 @@
 import {OpenAPIRoute} from "chanfana";
 import {z} from "zod";
-import {importJWK, jwtVerify} from 'jose';
+import {decodeJwt, importJWK, jwtVerify} from 'jose';
 import {worker_fetch} from "../util";
 
 
@@ -21,8 +21,6 @@ export class UserData extends OpenAPIRoute {
         const { username, token } = data.query;
         const key = await importJWK({crv, kty, x, y, alg}); // Import key from
 
-        const validated_token = await jwtVerify(token, key);
-        console.log(validated_token);
 
         const result = await c.env.DB.prepare(
             "SELECT * FROM tokens WHERE token = ? AND username = ?",
@@ -32,30 +30,33 @@ export class UserData extends OpenAPIRoute {
             return new Response(undefined, { status: 500 });
         }
 
-        console.log("Result:", result.results);
-        const exp = validated_token.payload.exp;
-        if (typeof exp != "number") { return new Response(undefined, { status: 400 }); }
-
-        console.log("Expires:", exp, "Date Now:", Date.now() / 1000);
-        if (exp < (Date.now() / 1000)) {
+        if (result.results[0].expiry < (Date.now())) {
             console.log("Expired");
             await c.env.DB.prepare(
                 "DELETE FROM tokens WHERE token = ? AND username = ?",
             ).bind(token, username).run();
-            return new Response(undefined, { status: 401 })
+            return new Response("Expired Token", { status: 401 })
         }
+
+        const { payload} = await jwtVerify(token, key);
+
+        console.log(payload);
+        if (!payload) { return new Response("Invalid Payload", { status: 401 }); }
+        if (!payload.permissions.includes(data.query.data)) {return new Response(`Invalid permission `, { status: 401 })}
+
+        console.log("Payload Permissions:", payload.permissions);
         console.log("User ID Auth Key:", c.env.APPLICATION_AUTH_KEY);
         const user_id = await worker_fetch("api/getUserID", JSON.stringify(
             {
                 username: username,
-                auth_key: "ECvYMx2iM0y95ipjx9jVGhZEbPVJfVxNt7hXMbXZEP0a+uM7ZBALMtMuH7dqC5Go"
+                auth_key: c.env.USER_ID_AUTH_KEY
             }),
             c.env.USER_AUTH
         );
         console.log("User ID:", user_id);
         const user_data = await worker_fetch("api/getUserData", JSON.stringify(
             {
-                key: "aaaaaaaa", user_id: user_id.text, column: data.query.data
+                key: c.env.USER_DATA_AUTH_KEY, user_id: user_id.text, column: data.query.data
             }),
             c.env.USER_DATA
         );
@@ -63,7 +64,7 @@ export class UserData extends OpenAPIRoute {
         try {
             //const requested_data = result.results[0].permissions[data.query.data];
             console.log("Requested Data:", user_data);
-            return new Response(user_data.text, { status: 200 });
+            return new Response(user_data.text, { status: user_data.status });
         }
         catch {
             return new Response(undefined, { status: 404 })
