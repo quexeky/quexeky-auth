@@ -1,36 +1,34 @@
-import { OpenAPIRoute } from "chanfana";
-import { z } from "zod";
-import {compareSync, hashSync} from "bcryptjs";
+import {OpenAPIRoute} from "chanfana";
+import {z} from "zod";
 
-export class UserOnboarding extends OpenAPIRoute {
+export class ApplicationCreator extends OpenAPIRoute {
     schema = {
         request: {
             query: z.object({
-                key: z.string().base64().length(8), // 512 bit password hash
+                key: z.string().base64().length(32), // Authorisation key to create new applications
             })
         }
     }
+
     async handle(c) {
         const data = await this.getValidatedData<typeof this.schema>();
 
-        const recvKey = data.query.key;
+        if (data.query.key !== c.env.APPLICATION_AUTH_KEY) {
+            return new Response("Invalid Auth Key", {status: 401});
+        }
 
 
-        const password = hashSync(recvKey);
-        console.log("Password:", password);
-
-        const application_id = new Uint8Array(64);
-        crypto.getRandomValues(application_id);
-        
+        const application_id = crypto.randomUUID();
 
 
         const result = await c.env.DB.prepare(
-            "INSERT INTO users(username, password) VALUES(?1, ?2)"
-        ).bind(data.query.username, password).run();
+            "INSERT INTO applications(application_id) VALUES(?)"
+        ).bind(application_id).run();
+        if (!result.success) {
+            return new Response("Database Intertion Error", {status: 500})
+        }
 
-        console.log(result);
-
-        return result;
+        return new Response(JSON.stringify({application_id: application_id}), {status: 200});
     }
 }
 
