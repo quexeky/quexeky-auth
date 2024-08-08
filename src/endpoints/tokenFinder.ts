@@ -27,9 +27,11 @@ export class TokenFinder extends OpenAPIRoute {
         const result = await c.env.DB.prepare(
             "SELECT * FROM tokens WHERE token = ? AND application_id = ?",
         ).bind(data.body.token, data.body.application_id).run();
+
         await c.env.DB.prepare(
             "DELETE FROM tokens WHERE token = ? AND application_id = ?",
         ).bind(data.body.token)
-        return result.results;
+
+        return new Response();
     }
 }

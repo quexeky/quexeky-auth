@@ -1,5 +1,5 @@
-import { OpenAPIRoute } from "chanfana";
-import { z } from "zod";
+import {OpenAPIRoute} from "chanfana";
+import {z} from "zod";
 
 export class ApplicationCreator extends OpenAPIRoute {
     schema = {
@@ -9,11 +9,12 @@ export class ApplicationCreator extends OpenAPIRoute {
             })
         }
     }
+
     async handle(c) {
         const data = await this.getValidatedData<typeof this.schema>();
 
         if (data.query.key !== c.env.APPLICATION_AUTH_KEY) {
-            return new Response(undefined, {status: 401});
+            return new Response("Invalid Auth Key", {status: 401});
         }
 
 
@@ -23,6 +24,9 @@ export class ApplicationCreator extends OpenAPIRoute {
         const result = await c.env.DB.prepare(
             "INSERT INTO applications(application_id) VALUES(?)"
         ).bind(application_id).run();
+        if (!result.success) {
+            return new Response("Database Intertion Error", {status: 500})
+        }
 
         return new Response(JSON.stringify({application_id: application_id}), {status: 200});
     }

@@ -35,37 +35,34 @@ export class TokenCreator extends OpenAPIRoute {
             }
         }
     }
+
     async handle(c) {
         const data = await this.getValidatedData<typeof this.schema>();
-        console.log("Data parsed");
 
-        const { username, password, application_id, permissions } = data.body;
+        const {username, password, application_id, permissions} = data.body;
 
         const user_login = await worker_fetch("api/userLogin", JSON.stringify(
-            { username: username, password: password }
+            {username: username, password: password}
         ), c.env.USER_AUTH);
-        console.log("User Login:", user_login);
 
         if (user_login.status != 200) {
             console.log(user_login);
-            return new Response(undefined, {status: user_login.status});
+            return new Response("User could not be logged in", {status: user_login.status});
         }
-        const token = await generate_signed_token(c, { username, application_id, permissions })
+        const token = await generate_signed_token(c, {username, application_id, permissions})
         const expiry = Date.now() + c.env.TOKEN_EXPIRY_TIME * 1000
-        console.log("Expiry:", expiry);
 
         const result = await c.env.DB.prepare(
             "INSERT INTO tokens(username, application_id, token, expiry) VALUES(?, ?, ?, ?)"
         ).bind(username, application_id, token, expiry).run();
 
         if (!result.success) {
-            console.log(result);
-            return new Response(undefined, { status: 500 });
+            return new Response("Database Insertion Error", {status: 500});
         }
 
         return new Response(JSON.stringify({
             token: token
-        }), { status: 200 });
+        }), {status: 200});
     }
 }
 
