@@ -5,7 +5,7 @@ export class ApplicationCreator extends OpenAPIRoute {
     schema = {
         request: {
             query: z.object({
-                key: z.string().base64().length(32), // Authorisation key to create new applications
+                key: z.string().base64().length(86), // Authorisation key to create new applications
             })
         }
     }
