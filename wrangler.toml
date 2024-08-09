@@ -15,5 +15,4 @@ database_name = "quexeky-auth"
 database_id = "83baa968-7fe4-4b9b-bd91-c6090c9455e3"
 
 [vars]
-TOKEN_EXPIRY_TIME = 5
-JWT_EXPORY_TIME = "1h"
+TOKEN_EXPIRY_TIME = 3600

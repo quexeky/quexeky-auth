@@ -69,13 +69,7 @@ export class UserData extends OpenAPIRoute {
                 }),
             c.env.USER_DATA
         );
-
-        try {
-            return new Response(user_data.text, {status: user_data.status});
-        } catch {
-            return new Response(undefined, {status: 404})
-        }
-
+        return new Response(user_data.text, {status: user_data.status});
     }
 }
 

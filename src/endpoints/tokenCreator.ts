@@ -26,7 +26,7 @@ export class TokenCreator extends OpenAPIRoute {
                     'application/json': {
                         schema: z.object({
                             username: z.string().max(32),
-                            password: z.string().base64().length(86), // 512 bit password hash
+                            password: z.string().base64().length(88), // 512 bit password hash
                             application_id: z.string().base64().length(16),
                             permissions: z.array(z.string().max(24)).max(64) // Limit the size of the request
                         })
