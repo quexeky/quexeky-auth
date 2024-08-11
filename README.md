@@ -2,6 +2,10 @@
 An authentication service for my own websites. Learning how credential management systems,
 OAuth, and other things work. Hosted on CloudFlare
 
+This repository assumes a pre-existing setup of [Cloudflare User Data](https://github.com/quexeky/cloudflare-user-data) and
+[Cloudflare User DB](https://github.com/quexeky/cloudflare-user-db) in that order. See those pages
+for setup. 
+
 # Setup
 This setup assumes a pre-configured wrangler CLI, although includes the package itself within the dependencies. For more details, see 
 [Cloudflare Docs](https://developers.cloudflare.com/workers/wrangler/install-and-update/) \
