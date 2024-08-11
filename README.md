@@ -3,12 +3,12 @@ An authentication service for my own websites. Learning how credential managemen
 OAuth, and other things work. Hosted on CloudFlare and can be viewed at [auth.quexeky.dev](https://auth.quexeky.dev). \
 
 Sample user logins:
-username: quex
-password: stringstringstringstringstringstringstringstringstringstringstringstringstringstringst==
-
-For validating:
-location: Paris
-age: 18
+username: quex \
+password: stringstringstringstringstringstringstringstringstringstringstringstringstringstringst== \
+\
+For validating: 
+location: Paris \
+age: 18 \
 
 This repository assumes a pre-existing setup of [Cloudflare User Data](https://github.com/quexeky/cloudflare-user-data) and
 [Cloudflare User DB](https://github.com/quexeky/cloudflare-user-db) in that order. See those pages
